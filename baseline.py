@@ -40,14 +40,14 @@ def answer_question(question):
 Include inline citations using arXiv IDs like [arxiv_id].
 
 Context:
-{context}
+{context[:2000]}
 
 Question: {question}
 
 Answer:"""
 
     response = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=1000
     )
@@ -58,7 +58,7 @@ Answer:"""
         "question": question,
         "answer": answer,
         "arxiv_ids": arxiv_ids,
-        "config": "baseline"
+        "config": "baseline" 
     }
 
 if __name__ == "__main__":

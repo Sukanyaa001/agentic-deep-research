@@ -16,7 +16,7 @@ MAX_ROUNDS = 5  # max reflection rounds
 
 def llm_call(prompt):
     response = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=1000
     )
@@ -85,7 +85,7 @@ def synthesizer(question, chunks, metadatas):
 the provided context. Include inline citations using arXiv IDs like [arxiv_id].
 
 Context:
-{context[:4000]}
+{context[:2000]}
 
 Question: {question}
 

@@ -12,6 +12,20 @@ SEARCH_QUERIES = [
     "agent memory",
     "agent benchmarks",
     "computer use agents",
+    "Mem0 memory agent",
+    "SWE-agent code",
+    "OSWorld benchmark",
+    "OpenHands agent",
+    "UI-TARS GUI agent",
+    "AppWorld benchmark",
+    "multi-agent collaboration",
+    "deep research agent",
+    "agent interoperability protocol",
+    "reflection self-critique LLM agent",
+    "hybrid retrieval RAG",
+    "agent evaluation benchmark",
+    "agentic memory architecture",
+    "GUI agent computer use",
 ]
 
 def scrape_papers(max_papers=600):

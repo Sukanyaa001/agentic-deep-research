@@ -11,8 +11,22 @@ def load_questions():
     questions = []
     with open(QUESTIONS_FILE, 'r') as f:
         for line in f:
-            questions.append(json.loads(line.strip()))
+            line = line.strip()
+            if line:
+                questions.append(json.loads(line))
     return questions
+
+def clean_arxiv_id(arxiv_id):
+    # remove version suffix e.g. 2605.28773v1 -> 2605.28773
+    return arxiv_id.split('v')[0] if 'v' in arxiv_id else arxiv_id
+
+def format_prediction(q_id, answer, arxiv_ids):
+    cited_papers = list(set([clean_arxiv_id(aid) for aid in arxiv_ids]))
+    return {
+        "id": q_id,
+        "answer": answer,
+        "cited_papers": cited_papers
+    }
 
 def save_predictions(predictions, config_name):
     filepath = os.path.join(PREDICTIONS_DIR, f"{config_name}.jsonl")
@@ -30,16 +44,12 @@ def run_baseline(questions):
         print(f"\nQuestion {q['id']}: {q['question'][:60]}...")
         try:
             result = baseline_answer(q['question'])
-            predictions.append({
-                "id": q['id'],
-                "question": q['question'],
-                "answer": result['answer'],
-                "arxiv_ids": result['arxiv_ids'],
-                "config": "baseline"
-            })
-            time.sleep(2)
+            pred = format_prediction(q['id'], result['answer'], result['arxiv_ids'])
+            predictions.append(pred)
+            time.sleep(3)
         except Exception as e:
             print(f"Failed: {e}")
+            predictions.append({"id": q['id'], "answer": "Unable to answer.", "cited_papers": []})
     save_predictions(predictions, "baseline")
     return predictions
 
@@ -52,17 +62,12 @@ def run_full_agent(questions):
         print(f"\nQuestion {q['id']}: {q['question'][:60]}...")
         try:
             result = run_agent(q['question'])
-            predictions.append({
-                "id": q['id'],
-                "question": q['question'],
-                "answer": result['answer'],
-                "arxiv_ids": result['arxiv_ids'],
-                "config": "full_agent",
-                "rounds": result['rounds']
-            })
-            time.sleep(2)
+            pred = format_prediction(q['id'], result['answer'], result['arxiv_ids'])
+            predictions.append(pred)
+            time.sleep(3)
         except Exception as e:
             print(f"Failed: {e}")
+            predictions.append({"id": q['id'], "answer": "Unable to answer.", "cited_papers": []})
     save_predictions(predictions, "full_agent")
     return predictions
 
@@ -70,12 +75,11 @@ def run_ablation_no_planner(questions):
     print("\n" + "="*50)
     print("RUNNING ABLATION - NO PLANNER")
     print("="*50)
-    from agent import retriever, reflector, synthesizer, citation_verifier, MAX_ROUNDS
+    from agent import retriever, reflector, synthesizer, MAX_ROUNDS
     predictions = []
     for q in questions:
         print(f"\nQuestion {q['id']}: {q['question'][:60]}...")
         try:
-            # skip planner — search original question directly
             all_chunks = []
             all_metadata = []
             for round_num in range(1, MAX_ROUNDS + 1):
@@ -85,16 +89,12 @@ def run_ablation_no_planner(questions):
                 if reflector(q['question'], all_chunks, round_num):
                     break
             answer, arxiv_ids = synthesizer(q['question'], all_chunks, all_metadata)
-            predictions.append({
-                "id": q['id'],
-                "question": q['question'],
-                "answer": answer,
-                "arxiv_ids": arxiv_ids,
-                "config": "no_planner"
-            })
-            time.sleep(2)
+            pred = format_prediction(q['id'], answer, arxiv_ids)
+            predictions.append(pred)
+            time.sleep(3)
         except Exception as e:
             print(f"Failed: {e}")
+            predictions.append({"id": q['id'], "answer": "Unable to answer.", "cited_papers": []})
     save_predictions(predictions, "no_planner")
     return predictions
 
@@ -107,20 +107,15 @@ def run_ablation_no_reflector(questions):
     for q in questions:
         print(f"\nQuestion {q['id']}: {q['question'][:60]}...")
         try:
-            # one round only — no reflection
             sub_questions = planner(q['question'])
             chunks, metas = retriever(sub_questions)
             answer, arxiv_ids = synthesizer(q['question'], chunks, metas)
-            predictions.append({
-                "id": q['id'],
-                "question": q['question'],
-                "answer": answer,
-                "arxiv_ids": arxiv_ids,
-                "config": "no_reflector"
-            })
-            time.sleep(2)
+            pred = format_prediction(q['id'], answer, arxiv_ids)
+            predictions.append(pred)
+            time.sleep(3)
         except Exception as e:
             print(f"Failed: {e}")
+            predictions.append({"id": q['id'], "answer": "Unable to answer.", "cited_papers": []})
     save_predictions(predictions, "no_reflector")
     return predictions
 
@@ -143,17 +138,12 @@ def run_ablation_no_citation_verifier(questions):
                 if reflector(q['question'], all_chunks, round_num):
                     break
             answer, arxiv_ids = synthesizer(q['question'], all_chunks, all_metadata)
-            # no citation verification step
-            predictions.append({
-                "id": q['id'],
-                "question": q['question'],
-                "answer": answer,
-                "arxiv_ids": arxiv_ids,
-                "config": "no_citation_verifier"
-            })
-            time.sleep(2)
+            pred = format_prediction(q['id'], answer, arxiv_ids)
+            predictions.append(pred)
+            time.sleep(3)
         except Exception as e:
             print(f"Failed: {e}")
+            predictions.append({"id": q['id'], "answer": "Unable to answer.", "cited_papers": []})
     save_predictions(predictions, "no_citation_verifier")
     return predictions
 
