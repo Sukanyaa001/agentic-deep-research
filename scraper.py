@@ -23,11 +23,11 @@ def scrape_papers(max_papers=600):
             break
 
         print(f"Searching for: {query}")
-        time.sleep(3)
+        time.sleep(10)
 
         search = arxiv.Search(
             query=query,
-            max_results=50,
+            max_results=100,
             sort_by=arxiv.SortCriterion.SubmittedDate,
         )
 
@@ -52,7 +52,7 @@ def scrape_papers(max_papers=600):
                    f.write(response.content)
                   print(f"✓ Downloaded: {paper.title[:50]}")
                   downloaded += 1
-                  time.sleep(2)
+                  time.sleep(5)
                 except Exception as e:
                   print(f"✗ Failed: {e}")
 
