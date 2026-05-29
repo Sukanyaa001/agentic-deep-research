@@ -1,0 +1,5 @@
+{"id": "q1", "question": "How do LLM agents handle memory?", "type": "survey"}
+{"id": "q2", "question": "What is the ReAct framework for LLM agents?", "type": "factoid"}
+{"id": "q3", "question": "Compare planning approaches used in different LLM agent papers", "type": "comparative"}
+{"id": "q4", "question": "What are the main benchmarks used to evaluate LLM agents?", "type": "survey"}
+{"id": "q5", "question": "How do agents handle tool use?", "type": "factoid"}
